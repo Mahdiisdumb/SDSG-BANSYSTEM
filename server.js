@@ -46,6 +46,16 @@ app.post("/admin/update", (req, res) => {
   res.json({ success: true, key, count });
 });
 
+// Admin delete
+app.post("/admin/delete", (req, res) => {
+  const { key, password } = req.body;
+  if (password !== P) return res.status(403).json({ error: "Invalid admin password" });
+  if (!key || !U.has(key)) return res.status(400).json({ error: "User not found" });
+
+  U.delete(key);
+  res.json({ success: true, key });
+});
+
 // Embedded HTML dashboard
 app.get("/", (req, res) => {
   res.send(`<!DOCTYPE html>
@@ -92,6 +102,12 @@ button:hover{cursor:pointer;transform:scale(1.05);background:var(--accent-2);col
 <input id="adminPass" type="password" placeholder="Password">
 <button id="updateBtn">Update User</button>
 <p id="adminMsg"></p>
+<hr>
+<p>Delete user (admin password required)</p>
+<input id="deleteKey" placeholder="User ID + IP">
+<input id="deletePass" type="password" placeholder="Password">
+<button id="deleteBtn">Delete User</button>
+<p id="deleteMsg"></p>
 </div>
 </div>
 <script>
@@ -110,7 +126,9 @@ document.getElementById("userTable").appendChild(r);
 });
 }catch(t){console.error(t),document.getElementById("userTable").innerHTML="<tr><td colspan='3'>Failed to load users</td></tr>"}
 }
-setInterval(f,50);
+setInterval(f,200);
+
+// Update user
 document.getElementById("updateBtn").addEventListener("click",async()=>{
 const key=document.getElementById("adminKey").value;
 const count=parseInt(document.getElementById("adminCount").value);
@@ -122,6 +140,26 @@ const res=await fetch("/admin/update",{method:"POST",headers:{"Content-Type":"ap
 const data=await res.json();
 if(data.success){msg.innerText="User updated!";f();}else{msg.innerText=data.error||"Failed"}}
 catch(t){console.error(t);msg.innerText="Error updating user"}})
+
+// Delete user
+document.getElementById("deleteBtn").addEventListener("click", async () => {
+  const key = document.getElementById("deleteKey").value;
+  const password = document.getElementById("deletePass").value;
+  const msg = document.getElementById("deleteMsg");
+
+  if (!key || !password) { msg.innerText = "Fill all fields"; return; }
+
+  try {
+    const res = await fetch("/admin/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, password })
+    });
+    const data = await res.json();
+    if (data.success) { msg.innerText = "User deleted!"; f(); }
+    else { msg.innerText = data.error || "Failed"; }
+  } catch (err) { console.error(err); msg.innerText = "Error deleting user"; }
+});
 </script>
 </body></html>`);
 });
