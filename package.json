@@ -1,5 +1,5 @@
 {
-  "name": "sdsg-ban-service",
+  "name": "sdsg-ban-system",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
